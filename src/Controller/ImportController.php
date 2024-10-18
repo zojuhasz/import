@@ -23,7 +23,7 @@ class ImportController {
   //nulláról feltöltés, sokáig fut!! 
   
   //n.a. rekord
-  $na_nid=20766;//n.a
+  $na_nid=1;//n.a
   
   
   

@@ -119,6 +119,7 @@ class ImportController {
       if(empty(trim($orszag))){$orszag='?';} 
       $ap_loazon_long=$apja.'--'.$apja_ev.'--'.$apja_orszag;
       $an_loazon_long=$anyja.'--'.$anyja_ev.'--'.$anyja_orszag;
+      $loazon_long=$neve.'--'.$ev.'--'.$orszag;
       //print "<br>neve szine:".$neve."-".$szine;     
           
       //$query = \Drupal::entityQuery('node');
@@ -170,7 +171,7 @@ class ImportController {
                   'field_akti' => $aktiv,'field_belyeg' => $belyeg, 'field_egybevetes' => $egybevetes, 'field_ellet' => $ellet,
                   'field_elozo' => $elozo, 'field_exp_kelt' => $exp_kelt,'field_fedez' => $fedez,  'field_herel' => $herel, 'field_neve_tenyeszt' => $nevel,
                   'field_iker' => $iker, 'field_imp_kelt' => $imp_kelt,'field_jegyzet' => $jegyzet, 'field_jelek' => $jelek, 'field_jelx' => $jelx,
-                  'field_jel_' => $jel_, 'field_kimult' => $kimult,'field_loazon' => $loazon,'field_neve' => $neve,  'field_no' => $no,
+                  'field_jel_' => $jel_, 'field_kimult' => $kimult,'field_loazon' => $loazon,'field_loazon_long' => $loazon_long,'field_neve' => $neve,  'field_no' => $no,
                   'field_regi_rek' => $regi_rek,'field_szures' => $szures, 'field_transzponder' => $transzponder,
                   'field_ueln' => $ueln, 'field_uj_rek' => $uj_rek,'field_upgrd' => $upgrd, 'field_utal' =>$utal,
                   'field_szine' => $term_szine, 'szine',
@@ -304,7 +305,7 @@ class ImportController {
 
   drupal_flush_all_caches();    
   //n.a. rekord
-  $na_nid=1;//n.a
+  $1;//n.a
   //$days_ago='14 days ago';
   $days_ago='14 days ago';
   $days_ig='0 days ago';

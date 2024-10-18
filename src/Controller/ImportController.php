@@ -17,11 +17,14 @@ use \Drupal\Core\Datetime\DrupalDateTime;
 //use Symfony\Component\HttpFoundation\Request;
 //loadatok betöltése régi ugeto ből az új ugeto19 -be
 class ImportController {
-  public function content() {
   
+  
+  public function content() {
+  //nulláról feltöltés, sokáig fut!! 
   
   //n.a. rekord
-  $na_nid=22318;//n.a
+  $na_nid=20766;//n.a
+  
   
   
   //előtörlés, csak ha kell, akkor viszont ki kell szedni a kommentezést
@@ -30,6 +33,7 @@ class ImportController {
   \Drupal\Core\Database\Database::setActiveConnection('external');
   $db = \Drupal\Core\Database\Database::getConnection();
   
+  //$query = \Drupal::entityQuery('lovak')->accessCheck(TRUE);
   $query = $db->select('lovak', 'lo');
   $query->leftJoin('lovak','ap','lo.apja = ap.neve && lo.apja_ev = ap.ev');
   $query->leftJoin('LO','nl','nl.SLONEV = lo.neve && nl.ISZULETESIEV = lo.ev');
@@ -46,9 +50,9 @@ class ImportController {
   $query->condition('lo.lo_vagy_fed', 'LO', '=');
   ////$query->condition('lo.no', 22129, '=');
   ////$query->condition('lo.ev', 2018, '>=');$query->condition('lo.ev', 2020, '<=');
-  //$query->condition('lo.ev', 2015, '>='); //ez volt utoljára futtatva
-  //$query->condition('lo.ev', 2021, '<'); //ez volt utoljára futtatva
-  $query->condition('lo.neve', 'Manina H', '=');// Ez csak kamubol van, hogy ne csináljon semmit, ha véletlenül elindul. Mivel már van OH, nem fogja felvinni újra
+  $query->condition('lo.ev', 2000, '>='); //ez volt utoljára futtatva
+  $query->condition('lo.ev', 2024, '<'); //ez volt utoljára futtatva
+  //$query->condition('lo.neve', 'Manina H', '=');// Ez csak kamubol van, hogy ne csináljon semmit, ha véletlenül elindul. Mivel már van OH, nem fogja felvinni újra
   $query->orderBy('lo.ev', 'ASC');
   $results = $query->execute();
   
@@ -69,14 +73,14 @@ class ImportController {
     $ker_apja=$content['apja'];
     $ker_anyja=$content['anyja'];
     if($ker_anyja==''){ // ha nincs anyja a regi db -ben, akkor az új db -ben nem hasonlitunk anyát, mert ott n.a. van, és nem üres
-      $query = \Drupal::entityQuery('node')
+      $query = \Drupal::entityQuery('node')->accessCheck(TRUE)
       ->condition('type', 'lovak')
       ->condition('field_ev', $ker_ev)
       ->condition('field_neve', $ker_neve)
       //->condition('field_anyanev', $ker_anyja)
       ->condition('field_apanev', $ker_apja);
     }else{
-      $query = \Drupal::entityQuery('node')
+      $query = \Drupal::entityQuery('node')->accessCheck(TRUE)
       ->condition('type', 'lovak')
       ->condition('field_ev', $ker_ev)
       ->condition('field_neve', $ker_neve)
@@ -117,7 +121,8 @@ class ImportController {
       $an_loazon_long=$anyja.'--'.$anyja_ev.'--'.$anyja_orszag;
       //print "<br>neve szine:".$neve."-".$szine;     
           
-      $query = \Drupal::entityQuery('node');
+      //$query = \Drupal::entityQuery('node');
+      $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
       //$query->condition('status', 1);
       $query->condition('type', 'lovak');
       $query->condition('field_loazon_long', $ap_loazon_long);
@@ -128,7 +133,8 @@ class ImportController {
       foreach($ap_entity_ids as $key => $value){$ap_nid=$value;}
       
           
-      $query = \Drupal::entityQuery('node');
+      //$query = \Drupal::entityQuery('node');
+      $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
       //$query->condition('status', 1);
       $query->condition('type', 'lovak');
       $query->condition('field_loazon_long', $an_loazon_long);
@@ -141,6 +147,21 @@ class ImportController {
       
       $loazonki=$title.'--'.$ker_ev.'--'.$ker_orszag;
       
+          // szine - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'szine')->condition('name', $szine)->accessCheck(FALSE)->execute();$term_szine = Term::loadMultiple($tids);
+       // lo_vagy_fed - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'lo_vagy_fed')->condition('name', $lo_vagy_fed)->accessCheck(FALSE)->execute();$term_lo_vagy_fed = Term::loadMultiple($tids);
+       // fedezomen - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'fedezomen')->condition('name', $fedezomen)->accessCheck(FALSE)->execute();$term_fedezomen = Term::loadMultiple($tids);
+       // imp_orsz - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'imp_orsz')->condition('name', $imp_orsz)->accessCheck(FALSE)->execute();$term_imp_orsz = Term::loadMultiple($tids);
+       // exp_orsz - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'exp_orsz')->condition('name', $exp_orsz)->accessCheck(FALSE)->execute();$term_exp_orsz = Term::loadMultiple($tids);
+       // orszag - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'orszag')->condition('name', $orszag)->accessCheck(FALSE)->execute();$term_orszag = Term::loadMultiple($tids);
+       // neme - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'neme')->condition('name', $neme)->accessCheck(FALSE)->execute();$term_neme = Term::loadMultiple($tids);
+       
           
           $node = Node::create([
                   'type' => 'lovak', 'langcode' => 'hu', 'uid' => 1,
@@ -152,13 +173,13 @@ class ImportController {
                   'field_jel_' => $jel_, 'field_kimult' => $kimult,'field_loazon' => $loazon,'field_neve' => $neve,  'field_no' => $no,
                   'field_regi_rek' => $regi_rek,'field_szures' => $szures, 'field_transzponder' => $transzponder,
                   'field_ueln' => $ueln, 'field_uj_rek' => $uj_rek,'field_upgrd' => $upgrd, 'field_utal' =>$utal,
-                  'field_szine' => taxonomy_term_load_multiple_by_name($szine, 'szine'),
-                  'field_lo_vagy_fed' => taxonomy_term_load_multiple_by_name($lo_vagy_fed, 'lo_vagy_fed'),
-                  'field_fedezomen' => taxonomy_term_load_multiple_by_name($fedezomen, 'fedezomen'),
-                  'field_imp_orsz' => taxonomy_term_load_multiple_by_name($imp_orsz, 'orszag'),
-                  'field_exp_orsz' => taxonomy_term_load_multiple_by_name($exp_orsz, 'orszag'),
-                  'field_orszag' => taxonomy_term_load_multiple_by_name($orszag, 'orszag'),
-                  'field_neme' => taxonomy_term_load_multiple_by_name($neme, 'neme'),
+                  'field_szine' => $term_szine, 'szine',
+                  'field_lo_vagy_fed' => $term_lo_vagy_fed,
+                  'field_fedezomen' => $term_fedezomen,
+                  'field_imp_orsz' => $term_imp_orsz,
+                  'field_exp_orsz' => $term_exp_orsz,
+                  'field_orszag' => $term_orszag,
+                  'field_neme' => $term_neme,
                   'field_apa' => $ap_nid, 'field_anya' => $an_nid, 'field_apanev' => $apja, 'field_anyanev' => $anyja,
                   'field_nlkft_iloid' => $nlkft_iloid
                    ]);
@@ -182,7 +203,8 @@ class ImportController {
     
     drupal_flush_all_caches();    
     //ha van $nid, akkor csak azt a lovat, ha nincs akkor az összeset, ahol vagy apa n.a. vagy anya n.a., tehát 22318 az id
-    $query = \Drupal::entityQuery('node');
+    //$query = \Drupal::entityQuery('node');
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     //$query->condition('status', 1);
     $orgroup = $query->orConditionGroup()->condition('field_apa', 22318)->condition('field_anya', 22318);
     $query->condition('type', 'lovak');
@@ -202,7 +224,7 @@ class ImportController {
       //print "<br>foreach";
       $s++;
       $nid=$korr_value;  
-      $na_nid=22318;
+      $na_nid=20766;
       //megnézni, hogy a szülők benne vannak-e az adatbázisban>
       //APA
       $node_storage = \Drupal::entityTypeManager()->getStorage('node');
@@ -218,7 +240,7 @@ class ImportController {
       //$out.= '('.$neve.'-';
       //Ha az APA n.a., akkor megpróbálni megtalálni az adatbázisban 
       if($apa_nid == $na_nid && $apanev!=''){
-        $query = \Drupal::entityQuery('node');
+        $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
          //$query->condition('status', 1);
         $query->condition('type', 'lovak');
          $query->condition('field_neve', $apanev);
@@ -285,7 +307,7 @@ class ImportController {
 
 drupal_flush_all_caches();    
   //n.a. rekord
-  $na_nid=22318;//n.a
+  $na_nid=20766;//n.a
   //$days_ago='14 days ago';
   $days_ago='14 days ago';
   $days_ig='0 days ago';
@@ -365,7 +387,8 @@ drupal_flush_all_caches();
          
     //megnézni, hogy a szülők benne vannak-e az adatbázisban>
     //APA
-    $query = \Drupal::entityQuery('node');
+    //$query = \Drupal::entityQuery('node');
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     //$query->condition('status', 1);
     $query->condition('type', 'lovak');
     $query->condition('field_loazon_long', $ap_loazon_long);
@@ -373,12 +396,14 @@ drupal_flush_all_caches();
     $ap_nid=$na_nid;//n.a.
     foreach($ap_entity_ids as $key => $value){$ap_nid=$value;}
     //ANYA         
-    $query = \Drupal::entityQuery('node');
+    //$query = \Drupal::entityQuery('node');
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     //$query->condition('status', 1);
     $query->condition('type', 'lovak');
     $query->condition('field_loazon_long', $an_loazon_long);
     $an_entity_ids = $query->execute();
     $an_nid=$na_nid;//n.a.
+    $created_neve='';
     foreach($an_entity_ids as $key => $value){$an_nid=$value;}
     //megnézni, hogy a szülők benne vannak-e az adatbázisban<
      
@@ -394,13 +419,15 @@ drupal_flush_all_caches();
     
     //print_r($node);
     
-    $query = \Drupal::entityQuery('node');
+    //$query = \Drupal::entityQuery('node');
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     $query->condition('type', $bundle);
     $query->condition('field_neve', $neve);
     $query->condition('field_ev', $ev);
     $query->condition('field_orszag.entity.name', $orszag);
     $query->condition('field_anyanev', $anyja);
     $upgrd_entity_ids = $query->execute();
+    $updated_neve='';
     foreach($upgrd_entity_ids as $key => $value){$nidUpd=$value;}  
     
     $num_rows = $query->count()->execute();
@@ -413,12 +440,29 @@ drupal_flush_all_caches();
       //print "<br>NEMTALÁL: ".$neve."-".$ev."-".$orszag."-".$anyja."-".$ap_nid."-".$an_nid;
       //print "<br>";
       if(isset($anyja) && $anyja!=''){
+        
+       // szine - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'szine')->condition('name', $szine)->accessCheck(FALSE)->execute();$term_szine = Term::loadMultiple($tids);
+       // lo_vagy_fed - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'lo_vagy_fed')->condition('name', $lo_vagy_fed)->accessCheck(FALSE)->execute();$term_lo_vagy_fed = Term::loadMultiple($tids);
+       // fedezomen - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'fedezomen')->condition('name', $fedezomen)->accessCheck(FALSE)->execute();$term_fedezomen = Term::loadMultiple($tids);
+       // imp_orsz - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'imp_orsz')->condition('name', $imp_orsz)->accessCheck(FALSE)->execute();$term_imp_orsz = Term::loadMultiple($tids);
+       // exp_orsz - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'exp_orsz')->condition('name', $exp_orsz)->accessCheck(FALSE)->execute();$term_exp_orsz = Term::loadMultiple($tids);
+       // orszag - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'orszag')->condition('name', $orszag)->accessCheck(FALSE)->execute();$term_orszag = Term::loadMultiple($tids);
+       // neme - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'neme')->condition('name', $neme)->accessCheck(FALSE)->execute();$term_neme = Term::loadMultiple($tids);
+        
+              
       $node = Node::create(['type' => 'lovak', 'langcode' => 'hu', 'uid' => 1,'moderation_state' => 'published', 'title' => $title, 'field_ev' => $ev,'field_fedez' => $fedez, 'field_penz' => $penz, 'field_rekord' => $rekord, 'field_akti' => $aktiv,'field_belyeg' => $belyeg, 'field_egybevetes' => $egybevetes, 'field_ellet' => $ellet,
                 'field_elozo' => $elozo, 'field_exp_kelt' => $exp_kelt,'field_fedez' => $fedez,'field_nevel_tenyeszt' => $nevel,  'field_herel' => $herel,'field_iker' => $iker, 'field_imp_kelt' => $imp_kelt,'field_jegyzet' => $jegyzet, 'field_jelek' => $jelek, 'field_jelx' => $jelx,'field_jel_' => $jel_, 'field_kimult' => $kimult,'field_loazon' => $loazon,
                 'field_loazon_long' => $title.'--'.$ev.'--'.$orszag,'field_neve' => $neve,  'field_no' => $no, 'field_regi_rek' => $regi_rek,'field_szures' => $szures, 'field_transzponder' => $transzponder,
-                'field_ueln' => $ueln, 'field_uj_rek' => $uj_rek,'field_upgrd' => $upgrd, 'field_utal' =>$utal,'field_szine' => taxonomy_term_load_multiple_by_name($szine, 'szine'),'field_lo_vagy_fed' => taxonomy_term_load_multiple_by_name($lo_vagy_fed, 'lo_vagy_fed'),
-                'field_fedezomen' => taxonomy_term_load_multiple_by_name($fedezomen, 'fedezomen'),'field_imp_orsz' => taxonomy_term_load_multiple_by_name($imp_orsz, 'orszag'),'field_exp_orsz' => taxonomy_term_load_multiple_by_name($exp_orsz, 'orszag'),
-                'field_orszag' => taxonomy_term_load_multiple_by_name($orszag, 'orszag'),'field_neme' => taxonomy_term_load_multiple_by_name($neme, 'neme'),'field_apa' => $ap_nid, 'field_anya' => $an_nid, 'field_apanev' => $apja, 'field_anyanev' => $anyja,'field_nlkft_iloid' => $nlkft_iloid]);
+                'field_ueln' => $ueln, 'field_uj_rek' => $uj_rek,'field_upgrd' => $upgrd, 'field_utal' =>$utal,'field_szine' => $term_szine, 'field_lo_vagy_fed' => $term_lo_vagy_fed, 'lo_vagy_fed',
+                'field_fedezomen' => $term_fedezomen,'field_imp_orsz' => $term_imp_orsz,'field_exp_orsz' => $term_exp_orsz,
+                'field_orszag' => $term_orszag,'field_neme' => $term_neme,'field_apa' => $ap_nid, 'field_anya' => $an_nid, 'field_apanev' => $apja, 'field_anyanev' => $anyja,'field_nlkft_iloid' => $nlkft_iloid]);
       $node->save();
       }      
     }elseif($num_rows == 1){
@@ -458,13 +502,33 @@ drupal_flush_all_caches();
       $nodeUpd->set('field_uj_rek', $uj_rek);
       $nodeUpd->set('field_upgrd', $upgrd);
       $nodeUpd->set('field_utal', $utal);
-      $nodeUpd->set('field_szine', taxonomy_term_load_multiple_by_name($szine, 'szine'));
-      $nodeUpd->set('field_lo_vagy_fed', taxonomy_term_load_multiple_by_name($lo_vagy_fed, 'field_lo_vagy_fed'));
-      $nodeUpd->set('field_fedezomen', taxonomy_term_load_multiple_by_name($fedezomen, 'fedezomen'));
-      $nodeUpd->set('field_imp_orsz', taxonomy_term_load_multiple_by_name($imp_orsz, 'orszag'));
-      $nodeUpd->set('field_exp_orsz', taxonomy_term_load_multiple_by_name($exp_orsz, 'orszag'));
-      $nodeUpd->set('field_szine', taxonomy_term_load_multiple_by_name($szine, 'szine'));
-      $nodeUpd->set('field_neme', taxonomy_term_load_multiple_by_name($neme, 'neme'));
+      
+      
+      
+       // szine - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'szine')->condition('name', $szine)->accessCheck(FALSE)->execute();$term_szine = Term::loadMultiple($tids);
+       // lo_vagy_fed - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'lo_vagy_fed')->condition('name', $lo_vagy_fed)->accessCheck(FALSE)->execute();$term_lo_vagy_fed = Term::loadMultiple($tids);
+       // fedezomen - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'fedezomen')->condition('name', $fedezomen)->accessCheck(FALSE)->execute();$term_fedezomen = Term::loadMultiple($tids);
+       // imp_orsz - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'imp_orsz')->condition('name', $imp_orsz)->accessCheck(FALSE)->execute();$term_imp_orsz = Term::loadMultiple($tids);
+       // exp_orsz - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'exp_orsz')->condition('name', $exp_orsz)->accessCheck(FALSE)->execute();$term_exp_orsz = Term::loadMultiple($tids);
+       // orszag - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'orszag')->condition('name', $orszag)->accessCheck(FALSE)->execute();$term_orszag = Term::loadMultiple($tids);
+       // neme - Entitás lekérdezés a kifejezések betöltéséhez
+       $tids = \Drupal::entityQuery('taxonomy_term')->condition('vid', 'neme')->condition('name', $neme)->accessCheck(FALSE)->execute();$term_neme = Term::loadMultiple($tids);
+       
+      
+      
+      $nodeUpd->set('field_szine', $term_szine, 'szine');
+      $nodeUpd->set('field_lo_vagy_fed', $term_lo_vagy_fed, 'field_lo_vagy_fed');
+      $nodeUpd->set('field_fedezomen', $term_fedezomen, 'fedezomen');
+      $nodeUpd->set('field_imp_orsz', $term_imp_orsz, 'orszag');
+      $nodeUpd->set('field_exp_orsz', $term_exp_orsz, 'orszag');
+      $nodeUpd->set('field_szine', $term_szine, 'szine');
+      $nodeUpd->set('field_neme', $term_neme, 'neme');
       $nodeUpd->set('field_apa', $ap_nid);
       $nodeUpd->set('field_anya', $an_nid);
       $nodeUpd->set('field_apanev', $apja);
@@ -482,7 +546,7 @@ drupal_flush_all_caches();
        
   
   }
-      
+  $msg='';    
   $ownerEmail = 'zojuhaszlog@gmail.com';
   $subject ='ugeto D9 ÉLES Importupgrd'.' --osszes:'.$s.' --create:'.$c.' --upgr:'.$u;
   $msg.= 'osszes:'.$s."\n".'create:'.$c.$created_neve."\n".'upgr:'.$u.$updated_neve;
@@ -503,7 +567,7 @@ drupal_flush_all_caches();
   // ugeto.com/hellokaduplalovak
   public function dupla_lovak($nid=0) {
     
-    $query = \Drupal::entityQuery('node');
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     //$query->condition('status', 1);
     $query->condition('type', 'lovak');
     //$query->sort('field_neve' , 'DESC'); 
@@ -515,7 +579,7 @@ drupal_flush_all_caches();
       $nid=$value;
       //print "<br>".$nid;
        $s++;
-      $na_nid=22318;
+      $na_nid=20766;
      
       //minden azonosito parametert kiszedünk     
       $node_storage = \Drupal::entityTypeManager()->getStorage('node');
@@ -530,7 +594,8 @@ drupal_flush_all_caches();
       if(!$talalt_key){
            $egylo_parameters[]=$parameters_str;
       }else{
-           //KIKOMMENTEZNI, HA ÉLES $node->delete($node);
+           //KIKOMMENTEZNI, HA ÉLES
+           //$node->delete($node);
            $out.="<br>Töröltem, mert több van:".$neve." ".$nid."IGAZÁBÓL NEM TÖRÖLTEM MERT AHHOZ KI KELL KOMMENTELNI-HelloController.php-462.sor";
       }
     }
@@ -543,7 +608,7 @@ drupal_flush_all_caches();
   // ugeto.com/hellokatorolt
   public function torolt_miatti($nid=0) {
     
-    $query = \Drupal::entityQuery('node');
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     //$query->condition('status', 1);
     $query->condition('type', 'lovak');
     $query->condition('field_neve', 'Amour Angus'); // EZT KELL KIKOMMENTEZNI, HOGY VÉGIGMENNEJ MINDENEN

@@ -302,10 +302,7 @@ class ImportController {
   //régi.ugeto LO táblából kigyüjti a nemrég (14 days ago) frissülteket, vagy felvitteket és beimportálja az új adatbázis NODE -ba.
   public function upgrade() {
 
-  
-  
-
-drupal_flush_all_caches();    
+  drupal_flush_all_caches();    
   //n.a. rekord
   $na_nid=20766;//n.a
   //$days_ago='14 days ago';

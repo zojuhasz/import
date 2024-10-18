@@ -206,7 +206,7 @@ class ImportController {
     //$query = \Drupal::entityQuery('node');
     $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     //$query->condition('status', 1);
-    $orgroup = $query->orConditionGroup()->condition('field_apa', 22318)->condition('field_anya', 22318);
+    $orgroup = $query->orConditionGroup()->condition('field_apa', 1)->condition('field_anya', 1);
     $query->condition('type', 'lovak');
     $query->condition($orgroup);
     $korr_entity_ids = $query->execute();

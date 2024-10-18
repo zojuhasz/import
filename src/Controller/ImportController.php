@@ -224,7 +224,7 @@ class ImportController {
       //print "<br>foreach";
       $s++;
       $nid=$korr_value;  
-      $na_nid=20766;
+      $na_nid=1;
       //megnézni, hogy a szülők benne vannak-e az adatbázisban>
       //APA
       $node_storage = \Drupal::entityTypeManager()->getStorage('node');
@@ -304,7 +304,7 @@ class ImportController {
 
   drupal_flush_all_caches();    
   //n.a. rekord
-  $na_nid=20766;//n.a
+  $na_nid=1;//n.a
   //$days_ago='14 days ago';
   $days_ago='14 days ago';
   $days_ig='0 days ago';
@@ -576,7 +576,7 @@ class ImportController {
       $nid=$value;
       //print "<br>".$nid;
        $s++;
-      $na_nid=20766;
+      $na_nid=1;
      
       //minden azonosito parametert kiszedünk     
       $node_storage = \Drupal::entityTypeManager()->getStorage('node');

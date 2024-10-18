@@ -305,7 +305,7 @@ class ImportController {
 
   drupal_flush_all_caches();    
   //n.a. rekord
-  $1;//n.a
+  $na_nid=1;//n.a
   //$days_ago='14 days ago';
   $days_ago='14 days ago';
   $days_ig='0 days ago';
